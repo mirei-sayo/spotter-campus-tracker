@@ -1,1 +1,1 @@
-from routes import auth, items, claims, admin
+from . import auth, items, claims, admin

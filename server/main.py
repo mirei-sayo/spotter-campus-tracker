@@ -4,7 +4,7 @@ from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 import os
 
-from routes import auth, items, claims, admin
+from server.routes import auth, items, claims, admin
 
 load_dotenv()
 

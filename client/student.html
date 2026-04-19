@@ -17,8 +17,10 @@
             <div class="sidebar-role">Student Dashboard</div>
             <ul class="sidebar-nav">
                 <li><a href="#" class="active" data-section="browse"><i class="material-icons-round">search</i>Browse Items</a></li>
-                <li><a href="#" data-section="my-claims"><i class="material-icons-round">bookmark</i>My Claims</a></li>
+                <li><a href="#" data-section="log-item"><i class="material-icons-round">add_box</i>Log Found Item</a></li>
                 <li><a href="#" data-section="report-lost"><i class="material-icons-round">add_circle</i>Report Lost Item</a></li>
+                <li><a href="#" data-section="my-claims"><i class="material-icons-round">bookmark</i>My Claims</a></li>
+                <li><a href="#" data-section="my-reports"><i class="material-icons-round">list_alt</i>My Reports</a></li>
             </ul>
             <div class="sidebar-footer">
                 <div class="user-info">
@@ -129,6 +131,69 @@
                         <i class="material-icons-round">send</i> Submit Report
                     </button>
                 </form>
+            </section>
+
+            <!-- Log Found Item Section -->
+            <section id="section-log-item" style="display:none;">
+                <div class="page-header">
+                    <h1>Log a Found Item</h1>
+                    <p>Found something on campus? Log it here so the rightful owner can find it.</p>
+                </div>
+                <form class="report-form glass-card" id="found-item-form">
+                    <div class="form-group">
+                        <label class="form-label" for="found-title">Item Name *</label>
+                        <input type="text" id="found-title" class="form-control" placeholder="e.g. Black iPhone 15" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="found-category">Category *</label>
+                            <select id="found-category" class="form-control" required>
+                                <option value="Electronics">Electronics</option>
+                                <option value="Clothing">Clothing</option>
+                                <option value="Accessories">Accessories</option>
+                                <option value="Documents">Documents</option>
+                                <option value="Keys">Keys</option>
+                                <option value="Bags">Bags</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="found-color">Color</label>
+                            <input type="text" id="found-color" class="form-control" placeholder="e.g. Black">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="found-brand">Brand</label>
+                            <input type="text" id="found-brand" class="form-control" placeholder="e.g. Apple">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="found-location">Where Found *</label>
+                            <input type="text" id="found-location" class="form-control" placeholder="e.g. Cafeteria, Table 5" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="found-description">Description</label>
+                        <textarea id="found-description" class="form-control" placeholder="Describe the item — condition, distinguishing marks, etc."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="submit-found-btn">
+                        <i class="material-icons-round">inventory</i> Log Item
+                    </button>
+                </form>
+            </section>
+
+            <!-- My Reports Section -->
+            <section id="section-my-reports" style="display:none;">
+                <div class="page-header">
+                    <h1>My Reports</h1>
+                    <p>Items you've reported lost or found.</p>
+                </div>
+                <div class="items-grid" id="my-reports-grid">
+                    <div class="empty-state">
+                        <i class="material-icons-round">hourglass_empty</i>
+                        <h3>Loading...</h3>
+                    </div>
+                </div>
             </section>
         </main>
     </div>
@@ -307,8 +372,76 @@
         // Observe section changes to lazy-load
         const observer = new MutationObserver(() => {
             if (document.getElementById('section-my-claims').style.display !== 'none') loadClaims();
+            if (document.getElementById('section-my-reports').style.display !== 'none') loadMyReports();
         });
         document.querySelectorAll('main > section').forEach(s => observer.observe(s, { attributes: true, attributeFilter: ['style'] }));
+
+        // Submit Found Item
+        document.getElementById('found-item-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submit-found-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="material-icons-round">hourglass_top</i> Submitting...';
+
+            const body = {
+                type: 'found',
+                title: document.getElementById('found-title').value,
+                category: document.getElementById('found-category').value,
+                color: document.getElementById('found-color').value || null,
+                brand: document.getElementById('found-brand').value || null,
+                location_found: document.getElementById('found-location').value || null,
+                description: document.getElementById('found-description').value || null,
+            };
+
+            const res = await apiFetch('/api/items/', { method: 'POST', body: JSON.stringify(body) });
+            const data = await res.json();
+
+            if (res.ok) {
+                showToast('Item logged successfully!');
+                e.target.reset();
+                loadItems();
+            } else {
+                showToast(data.detail || 'Failed to log item.', 'error');
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = '<i class="material-icons-round">inventory</i> Log Item';
+        });
+
+        // Load My Reports
+        async function loadMyReports() {
+            // Get current user details from /api/auth/me to filter correctly
+            const meRes = await apiFetch('/api/auth/me');
+            const meData = await meRes.json();
+            const myId = meData.id;
+
+            const res = await apiFetch('/api/items/');
+            const data = await res.json();
+            const grid = document.getElementById('my-reports-grid');
+
+            // Filter out items reported by this specific user
+            const items = (data.items || []).filter(i => i.reporter_id === myId);
+
+            if (items.length === 0) {
+                grid.innerHTML = `<div class="empty-state"><i class="material-icons-round">inventory_2</i><h3>No reports found</h3><p>Report a lost item or log a found item to see it here.</p></div>`;
+                return;
+            }
+
+            grid.innerHTML = items.map(item => `
+                <div class="item-card">
+                    <div class="item-card-header">
+                        <h3>${item.title}</h3>
+                        ${statusBadge(item.status)}
+                    </div>
+                    <div class="item-card-meta">
+                        <span class="meta-tag"><i class="material-icons-round">category</i>${item.category}</span>
+                        ${item.color ? `<span class="meta-tag"><i class="material-icons-round">palette</i>${item.color}</span>` : ''}
+                        ${item.location_found ? `<span class="meta-tag"><i class="material-icons-round">location_on</i>${item.location_found}</span>` : ''}
+                    </div>
+                    <p class="description">${item.description || 'No description.'}</p>
+                </div>
+            `).join('');
+        }
 
         // Initial load
         loadItems();

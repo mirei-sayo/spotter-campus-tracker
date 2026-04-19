@@ -27,10 +27,7 @@ class Student(UserBase):
         self.student_id = student_id
 
 
-class Finder(UserBase):
-    """Finder — can log found items into the system."""
-    def __init__(self, id, email, full_name):
-        super().__init__(id, email, full_name, role="finder")
+
 
 
 class Faculty(UserBase):
@@ -154,7 +151,7 @@ class SignupRequest(BaseModel):
     email: EmailStr
     password: str
     full_name: str
-    role: Literal["student", "finder"]
+    role: Literal["student", "faculty"]
     student_id: Optional[str] = None
 
 

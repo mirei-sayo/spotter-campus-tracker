@@ -38,7 +38,6 @@ function checkAuthStatus() {
 // Redirect based on role
 function redirectToDashboard(role) {
     if (role === 'student') window.location.href = 'student.html';
-    else if (role === 'finder') window.location.href = 'finder.html';
     else if (role === 'faculty') window.location.href = 'faculty.html';
     else window.location.href = 'index.html';
 }

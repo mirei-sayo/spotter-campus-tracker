@@ -188,11 +188,15 @@
                                 <i class="material-icons-round">school</i>
                                 <span>Student</span>
                             </div>
-                            <div class="role-option" data-role="finder">
-                                <i class="material-icons-round">volunteer_activism</i>
-                                <span>Finder</span>
+                            <div class="role-option" data-role="faculty" style="position: relative;">
+                                <i class="material-icons-round">admin_panel_settings</i>
+                                <span>Faculty</span>
                             </div>
                         </div>
+                        <p id="faculty-note" style="display:none; text-align:center; font-size:0.75rem; color:var(--warning); margin-top:-0.5rem; margin-bottom:1rem;">
+                            <i class="material-icons-round" style="font-size:0.85rem; vertical-align:middle;">info</i> 
+                            Requires Admin Approval (Bypassed for Demo)
+                        </p>
                         <input type="hidden" id="signup-role" value="student">
                     </div>
 
@@ -250,6 +254,12 @@
                 roleOptions.forEach(opt => opt.classList.remove('active'));
                 option.classList.add('active');
                 roleInput.value = option.dataset.role;
+                
+                if (option.dataset.role === 'faculty') {
+                    document.getElementById('faculty-note').style.display = 'block';
+                } else {
+                    document.getElementById('faculty-note').style.display = 'none';
+                }
             });
         });
     </script>

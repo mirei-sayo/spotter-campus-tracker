@@ -31,17 +31,18 @@ We maintain two ways to "Close" items, and we decided to **keep both**:
 - When a claim is **Rejected**, the associated item's status is automatically reset to **"Found"**. This ensures the item returns to the student catalog so others can try to claim it.
 - After rejection, the claim stays in the queue with a **"Close"** button so the Faculty can archive the trail.
 
-## ✅ Completed Tasks
 - [x] Fixed Actions column alignment in tables (removed display:flex).
 - [x] Implemented `/api/claims/{claim_id}/close` backend endpoint.
-- [x] Updated Faculty UI with "Archive" and "Close" buttons.
+- [x] Updated Faculty UI with "Close" button functionality and hover text.
 - [x] Fixed "Found" status assignment when logging a found item.
+- [x] Implemented automated 48-hour claim expiration background task.
 
 ## 📁 Key File Map
+- `server/main.py`: Contains the `expire_reservations_task` background loop.
 - `server/routes/claims.py`: Contains `approve`, `reject`, and `close` logic.
 - `server/routes/admin.py`: Faculty inventory and stats.
 - `client/faculty.html`: Faculty dashboard UI and claim handling.
 - `client/student.html`: Student browsing and reporting.
 - `client/js/api.js`: Shared API utilities/Auth.
 
-Good luck! The system is now technically sound and handles the full lifecycle of a lost item.
+Good luck! The system is now technically sound and handles the full lifecycle of a lost item including automated expirations.

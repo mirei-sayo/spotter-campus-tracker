@@ -2,8 +2,8 @@
 .dashboard-layout {
     display: grid;
     grid-template-columns: 260px 1fr;
-    height: 100vh;
-    overflow: hidden;
+    position: fixed;
+    inset: 0;
 }
 
 /* ── Sidebar ── */
@@ -14,7 +14,6 @@
     padding: 2rem 1.25rem;
     display: flex;
     flex-direction: column;
-    height: 100%;
 }
 
 .sidebar-brand {

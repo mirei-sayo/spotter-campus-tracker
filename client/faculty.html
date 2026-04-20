@@ -266,8 +266,8 @@
                 <thead><tr><th>Item ID</th><th>Claimant</th><th>Proof</th><th>Status</th><th>Submitted</th><th>Actions</th></tr></thead>
                 <tbody>${data.claims.map(claim => `
                     <tr>
-                        <td style="font-family:monospace;font-size:0.8rem;">${claim.item_id?.substring(0, 8)}...</td>
-                        <td>${claim.claimant_id?.substring(0, 8)}...</td>
+                        <td style="font-weight:600;">${claim.items ? claim.items.title : claim.item_id.substring(0,8)+'...'}</td>
+                        <td>${claim.profiles ? claim.profiles.full_name : claim.claimant_id.substring(0,8)+'...'}</td>
                         <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${claim.proof_description || '—'}</td>
                         <td>${statusBadge(claim.status)}</td>
                         <td>${formatDate(claim.reserved_at)}</td>

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from jose import jwt
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
@@ -71,9 +71,9 @@ async def login(body: LoginRequest):
     except Exception as e:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
+from middleware import get_current_user
 
 @router.get("/me")
-async def get_me(current_user: dict = None):
+async def get_me(current_user: dict = Depends(get_current_user)):
     """Return the currently authenticated user's profile."""
-    # Uses middleware — wired in main.py
     return current_user

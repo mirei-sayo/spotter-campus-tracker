@@ -336,7 +336,7 @@
                 <thead><tr><th>Item</th><th>Status</th><th>Submitted</th><th>Expires</th></tr></thead>
                 <tbody>${data.claims.map(c => `
                     <tr>
-                        <td>${c.item_id}</td>
+                        <td style="font-weight:600;">${c.items ? c.items.title : c.item_id.substring(0,8)+'...'}</td>
                         <td>${statusBadge(c.status)}</td>
                         <td>${formatDate(c.reserved_at)}</td>
                         <td>${formatDate(c.expires_at)}</td>

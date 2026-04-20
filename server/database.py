@@ -86,7 +86,7 @@ def delete_item(item_id: str):
 
 def get_claims(claimant_id: str = None, item_id: str = None):
     """Fetch claims — all (faculty) or filtered by user."""
-    query = supabase.table("claims").select("*, items(title, category), profiles(full_name)")
+    query = supabase.table("claims").select("*, items(title, category), profiles!claims_claimant_id_fkey(full_name)")
     if claimant_id:
         query = query.eq("claimant_id", claimant_id)
     if item_id:

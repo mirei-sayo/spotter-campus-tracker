@@ -229,7 +229,7 @@
                         <td>${item.location_found || '—'}</td>
                         <td>
                             ${item.status !== 'closed' ? `
-                                <button class="btn btn-outline" style="padding:0.4rem 0.8rem;font-size:0.8rem;border-color:rgba(100,116,139,0.3);color:#94a3b8;margin-right:0.4rem;" onclick="closeItem('${item.id}')" title="Archive item">
+                                <button class="btn btn-outline" style="padding:0.4rem 0.8rem;font-size:0.8rem;border-color:rgba(100,116,139,0.3);color:#94a3b8;margin-right:0.4rem;" onclick="closeItem('${item.id}')" title="Close item">
                                     <i class="material-icons-round" style="font-size:1rem;">archive</i>
                                 </button>
                             ` : ''}
@@ -265,14 +265,15 @@
         }
 
         async function closeItem(itemId) {
-            if (!confirm('Archive this item? It will be removed from the student catalog.')) return;
+            if (!confirm('Close this item? It will be removed from the student catalog.')) return;
             const res = await apiFetch(`/api/items/${itemId}`, { method: 'PUT', body: JSON.stringify({ status: 'closed' }) });
             if (res && res.ok) {
-                showToast('Item archived.');
+                showToast('Item closed.');
                 loadInventory();
                 loadStats();
             } else {
-                showToast('Failed to archive item.', 'error');
+                if (res) console.error("Close item error:", await res.text());
+                showToast('Failed to close item.', 'error');
             }
         }
 
@@ -341,12 +342,13 @@
         }
 
         async function closeClaim(claimId) {
-            const res = await apiFetch(`/api/claims/${claimId}/close`, { method: 'PUT' });
+            const res = await apiFetch(`/api/claims/${claimId}/close`, { method: 'PUT', body: JSON.stringify({}) });
             if (res && res.ok) {
                 showToast('Claim closed and archived.');
                 loadClaimsQueue();
                 loadStats();
             } else {
+                if (res) console.error("Close claim error:", await res.text());
                 showToast('Failed to close claim.', 'error');
             }
         }

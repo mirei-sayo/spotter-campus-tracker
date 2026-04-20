@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Body
 import sys, os
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
@@ -58,7 +58,7 @@ async def create_item(body: ItemCreateRequest, current_user: dict = Depends(get_
 @router.put("/{item_id}")
 async def update_item_route(
     item_id: str,
-    body: dict,
+    body: dict = Body(...),
     current_user: dict = Depends(get_current_user),
 ):
     """Update an item — owner or faculty only."""

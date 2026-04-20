@@ -46,13 +46,14 @@ async def audit_log(
 
 @router.get("/inventory")
 async def inventory(
+    type: str = None,
     status: str = None,
     category: str = None,
     search: str = None,
     current_user: dict = Depends(require_role("faculty")),
 ):
     """Full item inventory with filters — faculty only."""
-    items = get_items(status=status, category=category, search=search)
+    items = get_items(type=type, status=status, category=category, search=search)
     return {"items": items}
 
 

@@ -79,6 +79,11 @@
                         <i class="material-icons-round">search</i>
                         <input type="text" class="form-control" id="inv-search" placeholder="Search inventory...">
                     </div>
+                    <select class="form-control" id="inv-type" style="max-width:140px;">
+                        <option value="">All Types</option>
+                        <option value="lost">Lost</option>
+                        <option value="found">Found</option>
+                    </select>
                     <select class="form-control" id="inv-status" style="max-width:160px;">
                         <option value="">All Statuses</option>
                         <option value="reported">Reported</option>
@@ -193,11 +198,13 @@
         // ── Inventory ──
         async function loadInventory() {
             const search = document.getElementById('inv-search').value;
+            const type = document.getElementById('inv-type').value;
             const status = document.getElementById('inv-status').value;
             const category = document.getElementById('inv-category').value;
 
             let query = '/api/admin/inventory?';
             if (search) query += `search=${encodeURIComponent(search)}&`;
+            if (type) query += `type=${encodeURIComponent(type)}&`;
             if (status) query += `status=${encodeURIComponent(status)}&`;
             if (category) query += `category=${encodeURIComponent(category)}&`;
 
@@ -236,6 +243,7 @@
             clearTimeout(invTimeout);
             invTimeout = setTimeout(loadInventory, 400);
         });
+        document.getElementById('inv-type').addEventListener('change', loadInventory);
         document.getElementById('inv-status').addEventListener('change', loadInventory);
         document.getElementById('inv-category').addEventListener('change', loadInventory);
 

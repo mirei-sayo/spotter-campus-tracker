@@ -263,7 +263,12 @@
             grid.innerHTML = data.items.map(item => `
                 <div class="item-card">
                     <div class="item-card-header">
-                        <h3>${item.title}</h3>
+                        <div>
+                            <h3>${item.title}</h3>
+                            <span style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); margin-top: 2px; display: block;">
+                                ${item.type === 'lost' ? '🤔 Lost Item' : '🎯 Found Item'}
+                            </span>
+                        </div>
                         ${statusBadge(item.status)}
                     </div>
                     <div class="item-card-meta">

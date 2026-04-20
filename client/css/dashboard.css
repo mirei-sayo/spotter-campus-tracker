@@ -2,20 +2,19 @@
 .dashboard-layout {
     display: grid;
     grid-template-columns: 260px 1fr;
-    min-height: 100vh;
+    height: 100vh;
+    overflow: hidden;
 }
 
 /* ── Sidebar ── */
 .sidebar {
-    background: rgba(15, 23, 42, 0.9);
+    background: rgba(30, 32, 40, 0.6); /* Updated to match new dark slate theme */
     backdrop-filter: blur(20px);
     border-right: 1px solid var(--surface-border);
     padding: 2rem 1.25rem;
     display: flex;
     flex-direction: column;
-    position: sticky;
-    top: 0;
-    height: 100vh;
+    height: 100%;
 }
 
 .sidebar-brand {

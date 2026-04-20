@@ -54,11 +54,12 @@ body {
 /* Background Animated Blobs for Dynamic Feel */
 body::before, body::after {
   content: '';
-  position: absolute;
+  position: fixed;
   border-radius: 50%;
   filter: blur(120px);
   z-index: -1;
   animation: float 20s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
 }
 
 body::before {

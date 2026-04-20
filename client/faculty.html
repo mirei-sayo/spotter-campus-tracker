@@ -263,7 +263,7 @@
             }
 
             wrapper.innerHTML = `<table class="data-table">
-                <thead><tr><th>Item ID</th><th>Claimant</th><th>Proof</th><th>Status</th><th>Submitted</th><th>Actions</th></tr></thead>
+                <thead><tr><th>Item</th><th>Claimant</th><th>Proof</th><th>Status</th><th>Submitted</th><th>Actions</th></tr></thead>
                 <tbody>${data.claims.map(claim => `
                     <tr>
                         <td style="font-weight:600;">${claim.items ? claim.items.title : claim.item_id.substring(0,8)+'...'}</td>

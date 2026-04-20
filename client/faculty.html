@@ -228,7 +228,12 @@
                         <td>${statusBadge(item.status)}</td>
                         <td>${item.location_found || '—'}</td>
                         <td>
-                            <button class="btn btn-outline" style="padding:0.4rem 0.8rem;font-size:0.8rem;" onclick="deleteItem('${item.id}')">
+                            ${item.status !== 'closed' ? `
+                                <button class="btn btn-outline" style="padding:0.4rem 0.8rem;font-size:0.8rem;border-color:rgba(100,116,139,0.3);color:#94a3b8;margin-right:0.4rem;" onclick="closeItem('${item.id}')" title="Archive item">
+                                    <i class="material-icons-round" style="font-size:1rem;">archive</i>
+                                </button>
+                            ` : ''}
+                            <button class="btn btn-outline" style="padding:0.4rem 0.8rem;font-size:0.8rem;" onclick="deleteItem('${item.id}')" title="Delete item">
                                 <i class="material-icons-round" style="font-size:1rem;">delete</i>
                             </button>
                         </td>
@@ -253,8 +258,21 @@
             if (res && res.ok) {
                 showToast('Item deleted.');
                 loadInventory();
+                loadStats();
             } else {
                 showToast('Failed to delete item.', 'error');
+            }
+        }
+
+        async function closeItem(itemId) {
+            if (!confirm('Archive this item? It will be removed from the student catalog.')) return;
+            const res = await apiFetch(`/api/items/${itemId}`, { method: 'PUT', body: JSON.stringify({ status: 'closed' }) });
+            if (res && res.ok) {
+                showToast('Item archived.');
+                loadInventory();
+                loadStats();
+            } else {
+                showToast('Failed to archive item.', 'error');
             }
         }
 

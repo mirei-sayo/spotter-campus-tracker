@@ -279,15 +279,21 @@
                         <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${claim.proof_description || '—'}</td>
                         <td>${statusBadge(claim.status)}</td>
                         <td>${formatDate(claim.reserved_at)}</td>
-                        <td style="display:flex;gap:0.5rem;">
+                        <td>
                             ${claim.status === 'pending' ? `
-                                <button class="btn btn-primary" style="padding:0.4rem 0.8rem;font-size:0.8rem;" onclick="approveClaim('${claim.id}')">
+                                <button class="btn btn-primary" style="padding:0.4rem 0.8rem;font-size:0.8rem;margin-right:0.4rem;" onclick="approveClaim('${claim.id}')">
                                     <i class="material-icons-round" style="font-size:1rem;">check</i> Approve
                                 </button>
                                 <button class="btn btn-outline" style="padding:0.4rem 0.8rem;font-size:0.8rem;border-color:rgba(239,68,68,0.3);color:#ef4444;" onclick="rejectClaim('${claim.id}')">
                                     <i class="material-icons-round" style="font-size:1rem;">close</i> Reject
                                 </button>
-                            ` : '<span style="color:var(--text-secondary);">Resolved</span>'}
+                            ` : claim.status === 'closed' ? `
+                                <span style="color:var(--text-secondary);">Closed</span>
+                            ` : `
+                                <button class="btn btn-outline" style="padding:0.4rem 0.8rem;font-size:0.8rem;border-color:rgba(100,116,139,0.3);color:#94a3b8;" onclick="closeClaim('${claim.id}')">
+                                    <i class="material-icons-round" style="font-size:1rem;">archive</i> Close
+                                </button>
+                            `}
                         </td>
                     </tr>
                 `).join('')}</tbody>
@@ -313,6 +319,17 @@
                 loadStats();
             } else {
                 showToast('Failed to reject claim.', 'error');
+            }
+        }
+
+        async function closeClaim(claimId) {
+            const res = await apiFetch(`/api/claims/${claimId}/close`, { method: 'PUT' });
+            if (res && res.ok) {
+                showToast('Claim closed and archived.');
+                loadClaimsQueue();
+                loadStats();
+            } else {
+                showToast('Failed to close claim.', 'error');
             }
         }
 

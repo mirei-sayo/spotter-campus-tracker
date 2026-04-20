@@ -86,3 +86,19 @@ async def reject_claim(
         update_item(result[0]["item_id"], {"status": "found"})
     log_action(current_user["id"], "REJECT_CLAIM", "claim", claim_id)
     return {"message": "Claim rejected. Item returned to catalog."}
+
+
+@router.put("/{claim_id}/close")
+async def close_claim(
+    claim_id: str,
+    current_user: dict = Depends(require_role("faculty")),
+):
+    """Faculty closes/archives a resolved claim — item marked as closed."""
+    now = datetime.utcnow()
+    result = update_claim(claim_id, {
+        "status": "closed",
+    })
+    if result:
+        update_item(result[0]["item_id"], {"status": "closed"})
+    log_action(current_user["id"], "CLOSE_CLAIM", "claim", claim_id)
+    return {"message": "Claim closed and item archived."}

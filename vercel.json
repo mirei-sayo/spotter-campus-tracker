@@ -8,6 +8,6 @@
     { "src": "/(.*)", "dest": "client/$1" }
   ],
   "crons": [
-    { "path": "/api/cron/expire", "schedule": "0 * * * *" }
+    { "path": "/api/cron/expire", "schedule": "0 0 * * *" }
   ]
 }

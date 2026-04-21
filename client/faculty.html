@@ -18,6 +18,7 @@
             <ul class="sidebar-nav">
                 <li><a href="#" class="active" data-section="overview"><i class="material-icons-round">dashboard</i>Overview</a></li>
                 <li><a href="#" data-section="inventory"><i class="material-icons-round">inventory_2</i>Inventory</a></li>
+                <li><a href="#" data-section="verification-queue"><i class="material-icons-round">rule</i>Verification Queue</a></li>
                 <li><a href="#" data-section="claims-queue"><i class="material-icons-round">pending_actions</i>Claims Queue</a></li>
                 <li><a href="#" data-section="audit-log"><i class="material-icons-round">history</i>Audit Log</a></li>
             </ul>
@@ -45,8 +46,12 @@
                         <div class="stat-info"><h3 id="stat-total-items">—</h3><p>Total Items</p></div>
                     </div>
                     <div class="stat-card">
+                        <div class="stat-icon purple"><i class="material-icons-round">rule</i></div>
+                        <div class="stat-info"><h3 id="stat-pending-verification">—</h3><p>To Verify</p></div>
+                    </div>
+                    <div class="stat-card">
                         <div class="stat-icon green"><i class="material-icons-round">check_circle</i></div>
-                        <div class="stat-info"><h3 id="stat-found">—</h3><p>Found</p></div>
+                        <div class="stat-info"><h3 id="stat-found">—</h3><p>Found (Public)</p></div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon amber"><i class="material-icons-round">schedule</i></div>
@@ -109,6 +114,17 @@
                 </div>
             </section>
 
+            <!-- Verification Queue Section -->
+            <section id="section-verification-queue" style="display:none;">
+                <div class="page-header">
+                    <h1>Verification Queue</h1>
+                    <p>Review newly reported items before they become public.</p>
+                </div>
+                <div id="verification-queue-wrapper">
+                    <p style="color: var(--text-secondary);">Loading...</p>
+                </div>
+            </section>
+
             <!-- Claims Queue Section -->
             <section id="section-claims-queue" style="display:none;">
                 <div class="page-header">
@@ -158,6 +174,7 @@
         function loadSection(section) {
             if (section === 'overview') loadStats();
             else if (section === 'inventory') loadInventory();
+            else if (section === 'verification-queue') loadVerificationQueue();
             else if (section === 'claims-queue') loadClaimsQueue();
             else if (section === 'audit-log') loadAuditLog();
         }
@@ -169,6 +186,7 @@
             const data = await res.json();
 
             document.getElementById('stat-total-items').textContent = data.items.total;
+            document.getElementById('stat-pending-verification').textContent = data.items.pending_verification;
             document.getElementById('stat-found').textContent = data.items.found;
             document.getElementById('stat-pending-claims').textContent = data.claims.pending;
             document.getElementById('stat-claimed').textContent = data.items.claimed;
@@ -274,6 +292,64 @@
             } else {
                 if (res) console.error("Close item error:", await res.text());
                 showToast('Failed to close item.', 'error');
+            }
+        }
+
+        // ── Verification Queue ──
+        async function loadVerificationQueue() {
+            const res = await apiFetch('/api/admin/unverified');
+            if (!res || !res.ok) return;
+            const data = await res.json();
+            const wrapper = document.getElementById('verification-queue-wrapper');
+
+            if (!data.items || data.items.length === 0) {
+                wrapper.innerHTML = `<div class="empty-state"><i class="material-icons-round">rule</i><h3>No items pending verification</h3></div>`;
+                return;
+            }
+
+            wrapper.innerHTML = `<table class="data-table">
+                <thead><tr><th>Reporter</th><th>Title</th><th>Type</th><th>Category</th><th>Details</th><th>Date</th><th>Actions</th></tr></thead>
+                <tbody>${data.items.map(item => `
+                    <tr>
+                        <td>${item.profiles ? item.profiles.full_name : 'Unknown'}</td>
+                        <td style="font-weight:600;">${item.title}</td>
+                        <td><span style="text-transform:uppercase; font-size:0.75rem; font-weight:bold; color:var(--text-secondary);">${item.type}</span></td>
+                        <td>${item.category}</td>
+                        <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${item.description || '—'}</td>
+                        <td>${formatDate(item.created_at)}</td>
+                        <td>
+                            <button class="btn btn-primary" style="padding:0.4rem 0.8rem;font-size:0.8rem;margin-right:0.4rem;" onclick="verifyItem('${item.id}')">
+                                <i class="material-icons-round" style="font-size:1rem;">check</i> Verify
+                            </button>
+                            <button class="btn btn-outline" style="padding:0.4rem 0.8rem;font-size:0.8rem;border-color:rgba(239,68,68,0.3);color:#ef4444;" onclick="rejectVerification('${item.id}')">
+                                <i class="material-icons-round" style="font-size:1rem;">delete</i> Reject
+                            </button>
+                        </td>
+                    </tr>
+                `).join('')}</tbody>
+            </table>`;
+        }
+
+        async function verifyItem(itemId) {
+            const res = await apiFetch(`/api/admin/verify/${itemId}`, { method: 'PUT' });
+            if (res && res.ok) {
+                showToast('Item verified and is now public!');
+                loadVerificationQueue();
+                loadStats();
+            } else {
+                showToast('Failed to verify item.', 'error');
+            }
+        }
+
+        async function rejectVerification(itemId) {
+            if (!confirm('Reject and delete this item report?')) return;
+            const res = await apiFetch(`/api/items/${itemId}`, { method: 'DELETE' });
+            if (res && res.ok) {
+                showToast('Item rejected and deleted.');
+                loadVerificationQueue();
+                loadStats();
+            } else {
+                showToast('Failed to reject item.', 'error');
             }
         }
 

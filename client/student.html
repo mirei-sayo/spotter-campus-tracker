@@ -486,7 +486,7 @@
             const meData = await meRes.json();
             const myId = meData.id;
 
-            const res = await apiFetch('/api/items/');
+            const res = await apiFetch(`/api/items/?reporter_id=${myId}`);
             const data = await res.json();
             const grid = document.getElementById('my-reports-grid');
 
@@ -502,7 +502,10 @@
                 <div class="item-card">
                     <div class="item-card-header">
                         <h3>${item.title}</h3>
-                        ${statusBadge(item.status)}
+                        <div style="display:flex; gap:0.5rem; flex-wrap:wrap; align-items:center; justify-content:flex-end;">
+                            ${item.is_verified === false ? `<span class="status-badge" style="--badge-color: #8b5cf6;"><i class="material-icons-round" style="font-size:0.8rem; margin-right:4px;">hourglass_empty</i>Pending</span>` : ''}
+                            ${statusBadge(item.status)}
+                        </div>
                     </div>
                     ${item.image_url ? `<img src="${item.image_url}" class="item-card-image">` : ''}
                     <div class="item-card-meta">

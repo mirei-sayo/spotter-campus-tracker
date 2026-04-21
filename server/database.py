@@ -41,9 +41,16 @@ def create_profile(user_id: str, email: str, full_name: str, role: str, student_
 #  Item Helpers
 # ─────────────────────────────────────────
 
-def get_items(type: str = None, status: str = None, category: str = None, search: str = None):
+def get_items(type: str = None, status: str = None, category: str = None, search: str = None, reporter_id: str = None, all_items: bool = False):
     """Fetch items with optional filters."""
     query = supabase.table("items").select("*, profiles(full_name, email)")
+    
+    if not all_items:
+        if reporter_id:
+            query = query.or_(f"is_verified.eq.true,reporter_id.eq.{reporter_id}")
+        else:
+            query = query.eq("is_verified", True)
+
     if type:
         query = query.eq("type", type)
     if status:
@@ -71,6 +78,11 @@ def insert_item(data: dict):
 def update_item(item_id: str, data: dict):
     """Update an existing item."""
     res = supabase.table("items").update(data).eq("id", item_id).execute()
+    return res.data
+
+def verify_item(item_id: str):
+    """Mark an item as verified."""
+    res = supabase.table("items").update({"is_verified": True}).eq("id", item_id).execute()
     return res.data
 
 

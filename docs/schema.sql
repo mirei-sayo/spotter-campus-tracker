@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS items (
   color          TEXT,
   location_found TEXT,
   image_url      TEXT,
+  is_verified    BOOLEAN DEFAULT FALSE,
   status         TEXT NOT NULL DEFAULT 'reported'
                    CHECK (status IN ('reported', 'found', 'reserved', 'claimed', 'closed')),
   created_at     TIMESTAMPTZ DEFAULT NOW(),

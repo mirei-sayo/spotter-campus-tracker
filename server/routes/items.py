@@ -15,9 +15,10 @@ async def list_items(
     status: str = None,
     category: str = None,
     search: str = None,
+    reporter_id: str = None,
 ):
     """List all items — publicly readable with optional search/filter params."""
-    items = get_items(type=type, status=status, category=category, search=search)
+    items = get_items(type=type, status=status, category=category, search=search, reporter_id=reporter_id)
     return {"items": items}
 
 
@@ -43,6 +44,7 @@ async def create_item(body: ItemCreateRequest, current_user: dict = Depends(get_
         "color": body.color,
         "location_found": body.location_found,
         "image_url": body.image_url,
+        "is_verified": False,
         "status": "found" if body.type == "found" else "reported",
     }
     result = insert_item(data)

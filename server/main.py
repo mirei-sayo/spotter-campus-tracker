@@ -6,7 +6,7 @@ import os
 import asyncio
 from datetime import datetime
 
-from server.routes import auth, items, claims, admin, upload
+from server.routes import auth, items, claims, admin, upload, cron
 from server.database import supabase, update_claim, update_item, log_action
 
 load_dotenv()
@@ -32,29 +32,14 @@ app.include_router(items.router, prefix="/api/items", tags=["Items"])
 app.include_router(claims.router, prefix="/api/claims", tags=["Claims"])
 app.include_router(admin.router, prefix="/api/admin", tags=["Faculty Dashboard"])
 app.include_router(upload.router, prefix="/api/upload", tags=["Uploads"])
+app.include_router(cron.router, prefix="/api/cron", tags=["System Cron"])
 
-app.mount("/uploads", StaticFiles(directory="server/uploads"), name="uploads")
-# Serve static client files
-app.mount("/", StaticFiles(directory="client", html=True), name="client")
-
-
-async def expire_reservations_task():
-    while True:
-        try:
-            now = datetime.utcnow().isoformat()
-            res = supabase.table("claims").select("*").eq("status", "pending").lt("expires_at", now).execute()
-            if res and hasattr(res, 'data') and res.data:
-                for claim in res.data:
-                    update_claim(claim["id"], {"status": "expired"})
-                    update_item(claim["item_id"], {"status": "found"})
-                    log_action("system", "EXPIRE_CLAIM", "claim", claim["id"], details={"item_id": claim["item_id"]})
-        except Exception as e:
-            pass
-        await asyncio.sleep(60)
-
-@app.on_event("startup")
-async def startup_event():
-    asyncio.create_task(expire_reservations_task())
+# Only mount local static files if NOT running in Vercel.
+# Vercel's edge network serves the static client folder natively via vercel.json.
+if not os.environ.get("VERCEL"):
+    app.mount("/uploads", StaticFiles(directory="server/uploads"), name="uploads")
+    # Serve static client files locally
+    app.mount("/", StaticFiles(directory="client", html=True), name="client")
 
 @app.get("/api/health")
 def health_check():

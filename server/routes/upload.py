@@ -1,10 +1,12 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException
 import os
-import shutil
 import uuid
+import sys
+
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+from database import supabase
 
 router = APIRouter()
-UPLOAD_DIR = "server/uploads"
 
 @router.post("/")
 async def upload_image(file: UploadFile = File(...)):
@@ -13,9 +15,22 @@ async def upload_image(file: UploadFile = File(...)):
     
     file_extension = file.filename.split('.')[-1]
     unique_filename = f"{uuid.uuid4().hex}.{file_extension}"
-    file_path = os.path.join(UPLOAD_DIR, unique_filename)
+    
+    try:
+        # Read file bytes directly in memory (safe for Vercel)
+        file_bytes = await file.read()
         
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+        # Upload to supabase 'uploads' bucket
+        res = supabase.storage.from_("uploads").upload(
+            path=unique_filename,
+            file=file_bytes,
+            file_options={"content-type": file.content_type}
+        )
         
-    return {"url": f"/uploads/{unique_filename}"}
+        # Get public url string
+        public_url = supabase.storage.from_("uploads").get_public_url(unique_filename)
+        return {"url": public_url}
+        
+    except Exception as e:
+        print("Upload Error:", e)
+        raise HTTPException(status_code=500, detail="Failed to upload image. Make sure the 'uploads' bucket is created and public.")

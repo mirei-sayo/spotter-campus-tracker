@@ -11,6 +11,14 @@
 </head>
 <body>
     <div class="dashboard-layout">
+        <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+        
+        <!-- Mobile Header -->
+        <div class="mobile-header">
+            <div class="sidebar-brand text-gradient" style="margin:0;">Spotter</div>
+            <button class="mobile-menu-btn" onclick="toggleSidebar()"><i class="material-icons-round">menu</i></button>
+        </div>
+
         <!-- Sidebar -->
         <aside class="sidebar">
             <div class="sidebar-brand text-gradient">Spotter</div>
@@ -168,8 +176,14 @@
                 document.querySelectorAll('main > section').forEach(s => s.style.display = 'none');
                 document.getElementById(`section-${section}`).style.display = 'block';
                 loadSection(section);
+                if (window.innerWidth <= 768) toggleSidebar();
             });
         });
+
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('open');
+            document.querySelector('.sidebar-overlay').classList.toggle('active');
+        }
 
         function loadSection(section) {
             if (section === 'overview') loadStats();

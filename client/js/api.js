@@ -1,5 +1,5 @@
-// Shared API helper for authenticated dashboard pages
-const API_URL = 'http://localhost:8000';
+// Shared API helper for authenticated dashboard pages — uses current origin
+const API_URL = window.location.origin;
 
 function getToken() {
     return localStorage.getItem('spotter_token');

@@ -1,5 +1,5 @@
-// Base URL for the FastAPI backend
-const API_URL = 'http://localhost:8000';
+// Base URL for the FastAPI backend — uses current origin so it works on localhost AND Vercel
+const API_URL = window.location.origin;
 
 // Helper function to show toasts
 function showToast(message, type = 'success') {

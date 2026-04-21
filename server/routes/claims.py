@@ -30,6 +30,7 @@ async def create_claim(body: ClaimCreateRequest, current_user: dict = Depends(ge
         "claimant_id": current_user["id"],
         "status": "pending",
         "proof_description": body.proof_description,
+        "proof_image_url": body.proof_image_url,
         "reserved_at": now.isoformat(),
         "expires_at": (now + timedelta(hours=RESERVATION_HOURS)).isoformat(),
     }

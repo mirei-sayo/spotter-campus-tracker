@@ -168,8 +168,10 @@ class ItemCreateRequest(BaseModel):
     brand: Optional[str] = None
     color: Optional[str] = None
     location_found: Optional[str] = None
+    image_url: Optional[str] = None
 
 
 class ClaimCreateRequest(BaseModel):
     item_id: str
     proof_description: Optional[str] = None
+    proof_image_url: Optional[str] = None

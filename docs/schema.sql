@@ -67,6 +67,7 @@ CREATE TABLE IF NOT EXISTS claims (
   status              TEXT NOT NULL DEFAULT 'pending'
                         CHECK (status IN ('pending', 'approved', 'rejected', 'expired')),
   proof_description   TEXT,
+  proof_image_url     TEXT,
   reserved_at         TIMESTAMPTZ DEFAULT NOW(),
   expires_at          TIMESTAMPTZ DEFAULT (NOW() + INTERVAL '48 hours'),
   resolved_by         UUID REFERENCES profiles(id),

@@ -127,7 +127,11 @@
                         <label class="form-label" for="lost-description">Description</label>
                         <textarea id="lost-description" class="form-control" placeholder="Describe the item in detail..."></textarea>
                     </div>
-                    <button type="submit" class="btn btn-primary">
+                    <div class="form-group">
+                        <label class="form-label" for="lost-image">Reference Image (Optional)</label>
+                        <input type="file" id="lost-image" class="form-control" accept="image/*">
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="submit-lost-btn">
                         <i class="material-icons-round">send</i> Submit Report
                     </button>
                 </form>
@@ -176,6 +180,10 @@
                         <label class="form-label" for="found-description">Description</label>
                         <textarea id="found-description" class="form-control" placeholder="Describe the item — condition, distinguishing marks, etc."></textarea>
                     </div>
+                    <div class="form-group">
+                        <label class="form-label" for="found-image">Item Image (Optional)</label>
+                        <input type="file" id="found-image" class="form-control" accept="image/*">
+                    </div>
                     <button type="submit" class="btn btn-primary" id="submit-found-btn">
                         <i class="material-icons-round">inventory</i> Log Item
                     </button>
@@ -212,7 +220,11 @@
                     <label class="form-label" for="claim-proof">Proof of Ownership</label>
                     <textarea id="claim-proof" class="form-control" placeholder="Describe distinguishing features, serial numbers, contents, etc." required></textarea>
                 </div>
-                <button type="submit" class="btn btn-primary btn-block">
+                <div class="form-group">
+                    <label class="form-label" for="claim-image">Upload Image Proof (Optional)</label>
+                    <input type="file" id="claim-image" class="form-control" accept="image/*">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block" id="submit-claim-btn">
                     <i class="material-icons-round">verified</i> Submit Claim
                 </button>
             </form>
@@ -239,6 +251,27 @@
                 document.getElementById(`section-${section}`).style.display = 'block';
             });
         });
+
+        // Helper Image Upload function
+        async function uploadImage(fileInputId) {
+            const input = document.getElementById(fileInputId);
+            if (!input || !input.files || input.files.length === 0) return null;
+            
+            const file = input.files[0];
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            const res = await fetch('/api/upload/', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${getToken()}` },
+                body: formData
+            });
+            if (res.ok) {
+                const data = await res.json();
+                return data.url;
+            }
+            return null;
+        }
 
         // Load items
         async function loadItems() {
@@ -271,6 +304,7 @@
                         </div>
                         ${statusBadge(item.status)}
                     </div>
+                    ${item.image_url ? `<img src="${item.image_url}" class="item-card-image">` : ''}
                     <div class="item-card-meta">
                         <span class="meta-tag"><i class="material-icons-round">category</i>${item.category}</span>
                         ${item.color ? `<span class="meta-tag"><i class="material-icons-round">palette</i>${item.color}</span>` : ''}
@@ -308,12 +342,17 @@
         // Submit Claim
         document.getElementById('claim-form').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const btn = document.getElementById('submit-claim-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="material-icons-round">hourglass_top</i> Submitting...';
+
             const itemId = document.getElementById('claim-item-id').value;
             const proof = document.getElementById('claim-proof').value;
+            const proofImageUrl = await uploadImage('claim-image');
 
             const res = await apiFetch('/api/claims/', {
                 method: 'POST',
-                body: JSON.stringify({ item_id: itemId, proof_description: proof }),
+                body: JSON.stringify({ item_id: itemId, proof_description: proof, proof_image_url: proofImageUrl }),
             });
             const data = await res.json();
 
@@ -321,9 +360,13 @@
                 showToast(data.message || 'Claim submitted!');
                 closeClaimModal();
                 loadItems();
+                if (document.getElementById('section-my-claims').style.display !== 'none') loadClaims();
+                e.target.reset();
             } else {
                 showToast(data.detail || 'Failed to submit claim.', 'error');
             }
+            btn.disabled = false;
+            btn.innerHTML = '<i class="material-icons-round">verified</i> Submit Claim';
         });
 
         // Load My Claims
@@ -338,13 +381,22 @@
             }
 
             list.innerHTML = `<table class="data-table">
-                <thead><tr><th>Item</th><th>Status</th><th>Submitted</th><th>Expires</th></tr></thead>
+                <thead><tr><th>Item</th><th>Status</th><th>Submitted</th><th>Expires</th><th>Proof Details</th></tr></thead>
                 <tbody>${data.claims.map(c => `
                     <tr>
                         <td style="font-weight:600;">${c.items ? c.items.title : c.item_id.substring(0,8)+'...'}</td>
                         <td>${statusBadge(c.status)}</td>
                         <td>${formatDate(c.reserved_at)}</td>
                         <td>${formatDate(c.expires_at)}</td>
+                        <td>
+                            <details style="cursor: pointer;">
+                                <summary style="color: var(--primary-color); font-weight: 500;">View Proof</summary>
+                                <div style="margin-top: 10px; padding: 10px; background: rgba(0,0,0,0.1); border-radius: var(--radius-md);">
+                                    ${c.proof_description ? `<p style="font-size: 0.8rem; line-height: 1.4;">${c.proof_description}</p>` : ''}
+                                    ${c.proof_image_url ? `<img src="${c.proof_image_url}" class="proof-image">` : ''}
+                                </div>
+                            </details>
+                        </td>
                     </tr>
                 `).join('')}</tbody>
             </table>`;
@@ -353,6 +405,12 @@
         // Report Lost Item
         document.getElementById('lost-item-form').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const btn = document.getElementById('submit-lost-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="material-icons-round">hourglass_top</i> Submitting...';
+
+            const imageUrl = await uploadImage('lost-image');
+
             const body = {
                 type: 'lost',
                 title: document.getElementById('lost-title').value,
@@ -361,6 +419,7 @@
                 brand: document.getElementById('lost-brand').value || null,
                 location_found: document.getElementById('lost-location').value || null,
                 description: document.getElementById('lost-description').value || null,
+                image_url: imageUrl,
             };
 
             const res = await apiFetch('/api/items/', { method: 'POST', body: JSON.stringify(body) });
@@ -369,9 +428,12 @@
                 showToast('Lost item reported successfully!');
                 e.target.reset();
                 loadItems();
+                if (document.getElementById('section-my-reports').style.display !== 'none') loadMyReports();
             } else {
                 showToast(data.detail || 'Failed to report item.', 'error');
             }
+            btn.disabled = false;
+            btn.innerHTML = '<i class="material-icons-round">send</i> Submit Report';
         });
 
         // Observe section changes to lazy-load
@@ -388,6 +450,8 @@
             btn.disabled = true;
             btn.innerHTML = '<i class="material-icons-round">hourglass_top</i> Submitting...';
 
+            const imageUrl = await uploadImage('found-image');
+
             const body = {
                 type: 'found',
                 title: document.getElementById('found-title').value,
@@ -396,6 +460,7 @@
                 brand: document.getElementById('found-brand').value || null,
                 location_found: document.getElementById('found-location').value || null,
                 description: document.getElementById('found-description').value || null,
+                image_url: imageUrl,
             };
 
             const res = await apiFetch('/api/items/', { method: 'POST', body: JSON.stringify(body) });
@@ -405,6 +470,7 @@
                 showToast('Item logged successfully!');
                 e.target.reset();
                 loadItems();
+                if (document.getElementById('section-my-reports').style.display !== 'none') loadMyReports();
             } else {
                 showToast(data.detail || 'Failed to log item.', 'error');
             }
@@ -438,6 +504,7 @@
                         <h3>${item.title}</h3>
                         ${statusBadge(item.status)}
                     </div>
+                    ${item.image_url ? `<img src="${item.image_url}" class="item-card-image">` : ''}
                     <div class="item-card-meta">
                         <span class="meta-tag"><i class="material-icons-round">category</i>${item.category}</span>
                         ${item.color ? `<span class="meta-tag"><i class="material-icons-round">palette</i>${item.color}</span>` : ''}

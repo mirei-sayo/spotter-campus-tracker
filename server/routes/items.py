@@ -42,6 +42,7 @@ async def create_item(body: ItemCreateRequest, current_user: dict = Depends(get_
         "brand": body.brand,
         "color": body.color,
         "location_found": body.location_found,
+        "image_url": body.image_url,
         "status": "found" if body.type == "found" else "reported",
     }
     result = insert_item(data)

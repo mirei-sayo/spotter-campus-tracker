@@ -135,10 +135,20 @@ body::after {
   background-size: 200% auto;
 }
 
+.btn-primary i {
+  color: #ffffff;
+  text-shadow: 0 0 12px rgba(255, 255, 255, 0.9);
+  transition: transform var(--transition-fast);
+}
+
 .btn-primary:hover {
   background-position: right center; /* Gradients shift on hover */
   transform: translateY(-2px);
-  box-shadow: 0 10px 20px 0 rgba(181, 23, 158, 0.4);
+  box-shadow: 0 10px 20px 0 rgba(181, 23, 158, 0.5), 0 0 20px rgba(76, 201, 240, 0.4);
+}
+
+.btn-primary:hover i {
+  transform: translateX(3px); /* Move arrows outward slightly on hover */
 }
 
 .btn-primary:active {
@@ -215,16 +225,17 @@ body::after {
   position: fixed;
   bottom: 2rem;
   right: 2rem;
-  padding: 1rem 1.5rem;
+  padding: 1rem 1.75rem;
   border-radius: var(--radius-md);
-  background: var(--surface-color);
-  backdrop-filter: blur(10px);
+  background: rgba(30, 32, 40, 0.95);
+  backdrop-filter: blur(12px);
   border: 1px solid var(--surface-border);
   color: white;
+  font-weight: 500;
   box-shadow: var(--shadow-lg);
   transform: translateY(100px);
   opacity: 0;
-  transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   z-index: 1000;
   display: flex;
   align-items: center;
@@ -236,5 +247,23 @@ body::after {
   opacity: 1;
 }
 
-.toast.success { border-left: 4px solid var(--success); }
-.toast.error { border-left: 4px solid var(--error); }
+.toast.success { 
+  border: 1px solid var(--secondary-color);
+  box-shadow: 0 0 20px rgba(76, 201, 240, 0.4), inset 0 0 10px rgba(76, 201, 240, 0.1);
+}
+.toast.success i {
+  color: var(--secondary-color);
+  text-shadow: 0 0 12px var(--secondary-color);
+}
+.toast.success span {
+  text-shadow: 0 0 2px rgba(255,255,255,0.3);
+}
+
+.toast.error { 
+  border: 1px solid var(--primary-hover);
+  box-shadow: 0 0 20px rgba(247, 37, 133, 0.4), inset 0 0 10px rgba(247, 37, 133, 0.1);
+}
+.toast.error i {
+  color: var(--primary-hover);
+  text-shadow: 0 0 12px var(--primary-hover);
+}
